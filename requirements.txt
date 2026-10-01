@@ -1,0 +1,4 @@
+yt-dlp[default]
+av>=14
+customtkinter>=5.2
+mutagen>=1.47

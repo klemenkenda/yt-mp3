@@ -1,0 +1,10 @@
+[project]
+name = "yt-mp3"
+version = "1.0.0"
+description = "Windows desktop app: YouTube videos and playlists to MP3"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["network: tests that hit YouTube (deselect with -m 'not network')"]
