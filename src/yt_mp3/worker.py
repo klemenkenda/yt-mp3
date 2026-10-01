@@ -149,28 +149,39 @@ class Worker(threading.Thread):
 
         self._emit("track", key, "Downloading")
         src, info = download_audio(track.url, tmp_dir, progress, self.cancel, self.logger)
+        # Convert and tag in the temp dir, then copy only the finished .mp3 to the
+        # destination: Android's scoped storage refuses non-audio names (e.g. .part) in Music/.
+        tmp_mp3 = tmp_dir / f"{track.video_id}.mp3"
         try:
             self._emit("track", key, "Converting")
             on_fraction(0.85)
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            to_mp3(src, dst, self.opts.bitrate_kbps, self.cancel)
-        finally:
+            to_mp3(src, tmp_mp3, self.opts.bitrate_kbps, self.cancel)
             src.unlink(missing_ok=True)
 
-        track_no = None
-        if track.playlist_index:
-            track_no = f"{track.playlist_index}/{track.playlist_count}"
-        try:
-            write_tags(
-                dst,
-                title=info.get("title") or track.title,
-                artist=info.get("artist") or info.get("uploader") or track.uploader,
-                album=track.playlist_title or info.get("album"),
-                track=track_no,
-                cover_jpeg=fetch_cover(info.get("id") or track.video_id),
-            )
-        except Exception as e:  # tags are nice-to-have
-            self._emit("log", f"{track.title}: could not write tags ({short_error(e)})")
+            track_no = None
+            if track.playlist_index:
+                track_no = f"{track.playlist_index}/{track.playlist_count}"
+            try:
+                write_tags(
+                    tmp_mp3,
+                    title=info.get("title") or track.title,
+                    artist=info.get("artist") or info.get("uploader") or track.uploader,
+                    album=track.playlist_title or info.get("album"),
+                    track=track_no,
+                    cover_jpeg=fetch_cover(info.get("id") or track.video_id),
+                )
+            except Exception as e:  # tags are nice-to-have
+                self._emit("log", f"{track.title}: could not write tags ({short_error(e)})")
+
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copyfile(tmp_mp3, dst)
+            except BaseException:
+                dst.unlink(missing_ok=True)
+                raise
+        finally:
+            src.unlink(missing_ok=True)
+            tmp_mp3.unlink(missing_ok=True)
         if self.opts.on_saved:
             try:
                 self.opts.on_saved(dst)

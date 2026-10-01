@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,json
 source.exclude_dirs = bin,.buildozer,__pycache__
 source.exclude_patterns = build.ps1,*.xml
-version = 1.0.0
+version = 1.0.1
 
 # av -> ffmpeg + av_codecs (libshine MP3 encoder); the rest is pure Python
 requirements = python3,kivy,pyjnius,android,av,yt-dlp,mutagen,certifi

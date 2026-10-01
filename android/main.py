@@ -20,7 +20,15 @@ from kivy.clock import Clock  # noqa: E402
 from kivy.core.clipboard import Clipboard  # noqa: E402
 from kivy.core.window import Window  # noqa: E402
 from kivy.lang import Builder  # noqa: E402
+from kivy.metrics import dp  # noqa: E402
+from kivy.properties import NumericProperty  # noqa: E402
 from kivy.storage.jsonstore import JsonStore  # noqa: E402
+from kivy.uix.boxlayout import BoxLayout  # noqa: E402
+from kivy.uix.button import Button  # noqa: E402
+from kivy.uix.label import Label  # noqa: E402
+from kivy.uix.popup import Popup  # noqa: E402
+from kivy.uix.scrollview import ScrollView  # noqa: E402
+from kivy.utils import escape_markup  # noqa: E402
 
 BITRATES = ("128 kbps", "192 kbps", "256 kbps", "320 kbps")
 URL_RE = re.compile(r"https?://\S+")
@@ -40,7 +48,7 @@ KV = """
     disabled_color: 1, 1, 1, 0.4
     font_size: '16sp'
 
-<TrackRow@BoxLayout>:
+<TrackRow@ButtonBehavior+BoxLayout>:
     title: ''
     status: ''
     color: 1, 1, 1, 1
@@ -48,7 +56,13 @@ KV = """
     height: dp(44)
     padding: dp(10), 0
     spacing: dp(8)
+    on_release: app.show_details(self.title, self.status)
     canvas.before:
+        Color:
+            rgba: (1, 1, 1, 0.08) if self.state == 'down' else (0, 0, 0, 0)
+        Rectangle:
+            pos: self.pos
+            size: self.size
         Color:
             rgba: 1, 1, 1, 0.06
         Rectangle:
@@ -91,7 +105,8 @@ KV = """
 
 BoxLayout:
     orientation: 'vertical'
-    padding: dp(14), dp(10)
+    # [left, top, right, bottom]; top/bottom grow by the system bar insets (edge-to-edge)
+    padding: dp(14), dp(10) + app.inset_top, dp(14), dp(10) + app.inset_bottom
     spacing: dp(8)
     canvas.before:
         Color:
@@ -281,6 +296,26 @@ class AndroidBridge:
         intent.setAction(self.Intent.ACTION_MAIN)  # handle once
         app.add_urls(URL_RE.findall(text))
 
+    def system_bar_insets(self):
+        """(top, bottom) pixels covered by status/navigation bars.
+
+        Apps targeting API 35 are drawn edge-to-edge on Android 15+, i.e. under the bars.
+        Older Android versions lay the app out between the bars, so no padding is needed.
+        """
+        if self.sdk < 35:
+            return 0, 0
+        try:
+            from jnius import autoclass
+
+            insets = self.activity.getWindow().getDecorView().getRootWindowInsets()
+            if insets is None:
+                return 0, 0
+            Type = autoclass("android.view.WindowInsets$Type")
+            i = insets.getInsets(Type.systemBars() | Type.displayCutout())
+            return i.top, i.bottom
+        except Exception:
+            return 0, 0
+
     def scan(self, path):
         """Make a new file visible to music players immediately."""
         self.Scanner.scanFile(self.activity, [str(path)], None, None)
@@ -304,6 +339,8 @@ class AndroidBridge:
 
 class YtMp3App(App):
     bitrates = BITRATES
+    inset_top = NumericProperty(0)
+    inset_bottom = NumericProperty(0)
 
     def build(self):
         self.title = "YT to MP3"
@@ -320,7 +357,11 @@ class YtMp3App(App):
         ids.skip.active = s.get("skip", True)
 
         self.bridge = AndroidBridge(self) if ANDROID else None
-        Window.bind(on_keyboard=self._on_key)
+        Window.softinput_mode = "below_target"  # keep the focused field above the keyboard
+        Window.bind(on_keyboard=self._on_key, on_resize=lambda *a: Clock.schedule_once(self._apply_insets, 0.2))
+        # insets are only known once the view is attached; re-check shortly after start
+        for delay in (0, 0.5, 1.5):
+            Clock.schedule_once(self._apply_insets, delay)
         Clock.schedule_interval(self._poll, 0.1)
         return self.root
 
@@ -339,6 +380,28 @@ class YtMp3App(App):
         new = [u for u in urls if u not in existing]
         if new:
             box.text = "\n".join(filter(None, [existing, *new]))
+
+    def _apply_insets(self, *args):
+        if self.bridge:
+            self.inset_top, self.inset_bottom = self.bridge.system_bar_insets()
+
+    def show_details(self, title, status):
+        """Full title + status (errors are often too long for the row)."""
+        if not status:
+            return
+        content = BoxLayout(orientation="vertical", padding=dp(12), spacing=dp(12))
+        label = Label(text=f"[b]{escape_markup(title)}[/b]\n\n{escape_markup(status)}", markup=True,
+                      font_size="15sp", halign="left", valign="top")
+        label.bind(width=lambda lbl, w: setattr(lbl, "text_size", (w, None)),
+                   texture_size=lambda lbl, ts: setattr(lbl, "height", ts[1]))
+        scroll = ScrollView()
+        label.size_hint_y = None
+        scroll.add_widget(label)
+        content.add_widget(scroll)
+        popup = Popup(title="Details", content=content, size_hint=(0.92, 0.5))
+        close = Button(text="Close", size_hint_y=None, height=dp(46), on_release=lambda *a: popup.dismiss())
+        content.add_widget(close)
+        popup.open()
 
     def paste(self):
         self.add_urls(URL_RE.findall(Clipboard.paste() or ""))

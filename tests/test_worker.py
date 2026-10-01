@@ -22,7 +22,11 @@ def run_job(tmp_path, tracks_by_url, fail_ids=(), existing=(), **opts):
         p.write_bytes(b"x")
         return p, {"id": vid, "title": vid.upper(), "uploader": "U"}
 
+    out_root = tmp_path
+
     def fake_to_mp3(src, dst, kbps, cancel):
+        # must not write into the destination folder (Android scoped storage)
+        assert out_root not in Path(dst).parents
         Path(dst).write_bytes(b"mp3")
 
     for rel in existing:
