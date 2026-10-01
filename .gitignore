@@ -4,3 +4,6 @@ dist/
 __pycache__/
 *.pyc
 .pytest_cache/
+android/bin/
+android/.buildozer/
+android/yt_mp3/

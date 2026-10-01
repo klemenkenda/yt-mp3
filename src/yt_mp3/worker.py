@@ -18,6 +18,7 @@ import shutil
 import tempfile
 import threading
 from dataclasses import dataclass
+from typing import Callable
 from pathlib import Path
 
 from .converter import Cancelled, fetch_cover, to_mp3, write_tags
@@ -44,6 +45,7 @@ class JobOptions:
     bitrate_kbps: int = 192
     playlist_subfolder: bool = True
     skip_existing: bool = True
+    on_saved: Callable[[Path], None] | None = None  # e.g. Android media scanner
 
 
 class Worker(threading.Thread):
@@ -169,5 +171,10 @@ class Worker(threading.Thread):
             )
         except Exception as e:  # tags are nice-to-have
             self._emit("log", f"{track.title}: could not write tags ({short_error(e)})")
+        if self.opts.on_saved:
+            try:
+                self.opts.on_saved(dst)
+            except Exception:
+                pass
         self._emit("track", key, "Done")
         return "done"

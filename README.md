@@ -25,6 +25,14 @@ yt-mp3.exe --headless "D:\Music" https://www.youtube.com/playlist?list=...
 ```
 This runs without a window, uses the default settings (192 kbps, subfolders, skip existing) and writes a log to `<folder>\yt-mp3.log`. The exit code is 1 if any track failed.
 
+## Android app
+`yt-mp3.apk` is on the [Releases](https://github.com/klemenkenda/yt-mp3/releases) page. Install it on the phone and allow installing from unknown sources when asked. It's sideload-only: Google Play doesn't allow YouTube downloaders. It requires Android 7.0 or newer on a 64-bit ARM phone.
+
+- Paste links (or use **Paste**), or share straight from the YouTube app: **Share → YT to MP3**.
+- MP3s are saved to `Music/<folder>` (default `Music/YT-MP3`) and show up in music players right away.
+- It has the same options as the desktop app. Pressing Back while downloading sends the app to the background instead of closing it. Keep the app open for long playlists, because Android may stop background apps.
+- MP3 encoding uses FFmpeg's `libshine` encoder (the desktop app uses LAME).
+
 ## How it works
 | Step | Library |
 |---|---|
@@ -52,6 +60,17 @@ Requires Python 3.10+ on the build machine.
 .\build.ps1            # creates .venv, installs deps, runs tests, builds dist\yt-mp3.exe
 .\build.ps1 -SkipTests
 ```
+
+### Android APK
+This needs only Docker Desktop: Buildozer, the Android SDK/NDK and JDK all run in the `kivy/buildozer` container.
+```powershell
+.\android\build.ps1          # signed release APK -> android\bin\
+.\android\build.ps1 -Debug   # debug APK
+```
+- **First build:** it downloads about 3 GB into the Docker volume `yt-mp3-buildozer` and takes 30–60 minutes. Later builds are much faster.
+- **Signing:** the first release build creates a signing key in `%USERPROFILE%\.yt-mp3-android\` (`release.keystore` and `keystore.pass`, both outside the repo). **Back them up.** Every app update must be signed with the same key, or Android refuses to install it over the old version.
+- **Code layout:** `android/main.py` is the Kivy UI. The build script copies the shared core (`src/yt_mp3/`, without the desktop GUI) next to it.
+- **Testing the UI on a PC:** `python android/main.py` (needs `pip install kivy`).
 
 **When downloads start failing**, YouTube has usually changed something. Re-run `.\build.ps1`: it always installs the newest yt-dlp. Then replace the exe.
 

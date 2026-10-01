@@ -10,10 +10,22 @@ import av
 from mutagen.id3 import APIC, ID3, TALB, TIT2, TPE1, TRCK, ID3NoHeaderError
 
 SAMPLE_RATE = 44100
+# LAME in the desktop PyAV wheels; shine (fixed-point) in the python-for-android FFmpeg build.
+MP3_ENCODERS = ("libmp3lame", "libshine")
 
 
 class Cancelled(Exception):
     """Raised when the user cancels an operation."""
+
+
+def mp3_encoder() -> str:
+    for name in MP3_ENCODERS:
+        try:
+            av.codec.Codec(name, "w")
+            return name
+        except Exception:
+            continue
+    raise RuntimeError("No MP3 encoder available in this FFmpeg build")
 
 
 def to_mp3(
@@ -32,7 +44,7 @@ def to_mp3(
     try:
         with av.open(str(src)) as inp, av.open(str(tmp), "w", format="mp3") as out:
             in_stream = inp.streams.audio[0]
-            out_stream = out.add_stream("libmp3lame", rate=SAMPLE_RATE, layout="stereo")
+            out_stream = out.add_stream(mp3_encoder(), rate=SAMPLE_RATE, layout="stereo")
             out_stream.bit_rate = bitrate_kbps * 1000
             out_stream.format = "s16p"
             resampler = av.AudioResampler(format="s16p", layout="stereo", rate=SAMPLE_RATE)

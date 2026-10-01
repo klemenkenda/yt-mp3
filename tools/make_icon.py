@@ -1,9 +1,11 @@
 """Generate assets/icon.ico (red rounded square, white play triangle, music note feel).
 
 Pure Python (no Pillow): renders RGBA with simple supersampling and packs PNGs into an ICO.
-Run: python tools/make_icon.py
+Run: python tools/make_icon.py            (assets/icon.ico)
+     python tools/make_icon.py --android  (android/icon.png, presplash.png)
 """
 import struct
+import sys
 import zlib
 from pathlib import Path
 
@@ -60,6 +62,12 @@ def png(size, raw):
 
 
 def main():
+    root = Path(__file__).resolve().parents[1]
+    if "--android" in sys.argv:
+        (root / "android" / "icon.png").write_bytes(render(512, ss=2))
+        (root / "android" / "presplash.png").write_bytes(render(256, ss=2))
+        print("wrote android/icon.png, android/presplash.png")
+        return
     images = [render(s) for s in SIZES]
     header = struct.pack("<HHH", 0, 1, len(images))
     offset = 6 + 16 * len(images)
