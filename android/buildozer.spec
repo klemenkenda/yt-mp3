@@ -31,7 +31,8 @@ android.manifest.launch_mode = singleTask
 # Android 10 needs legacy storage to write into Music/ via file paths
 android.extra_manifest_application_arguments = extra_manifest_application_arguments.xml
 
-p4a.branch = master
+# develop: PyAV 18 recipe (FFmpeg 8 compatible); master still ships PyAV 13
+p4a.branch = develop
 
 [buildozer]
 log_level = 2
