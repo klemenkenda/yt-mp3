@@ -3,6 +3,14 @@
 A small Windows desktop app that downloads YouTube videos and playlists as MP3 files.
 It ships as a single `yt-mp3.exe` (~52 MB). Users don't need Python, ffmpeg or anything else installed.
 
+## Latest releases
+| App | Version | Download |
+|---|---|---|
+| Windows | [1.1.0](https://github.com/klemenkenda/yt-mp3/releases/tag/v1.1.0) (2026-10-02) | [`yt-mp3.exe`](https://github.com/klemenkenda/yt-mp3/releases/download/v1.1.0/yt-mp3.exe) |
+| Android | [1.1.0](https://github.com/klemenkenda/yt-mp3/releases/tag/android-v1.1.0) (2026-10-02) | [`yt-mp3.apk`](https://github.com/klemenkenda/yt-mp3/releases/download/android-v1.1.0/yt-mp3.apk) |
+
+All versions, release notes and SHA-256 checksums are on the [Releases page](https://github.com/klemenkenda/yt-mp3/releases).
+
 ## Usage
 1. Paste one or more YouTube links into the box, one per line. Single videos and playlists can be mixed.
 2. Choose the destination folder.
