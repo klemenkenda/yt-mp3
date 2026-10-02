@@ -3,10 +3,10 @@ title = YT to MP3
 package.name = ytmp3
 package.domain = io.github.klemenkenda
 source.dir = .
-source.include_exts = py,png,json
+source.include_exts = py,png,json,ttf
 source.exclude_dirs = bin,.buildozer,__pycache__
 source.exclude_patterns = build.ps1,*.xml
-version = 1.0.1
+version = 1.1.0
 
 # av -> ffmpeg + av_codecs (libshine MP3 encoder); the rest is pure Python
 requirements = python3,kivy,pyjnius,android,av,yt-dlp,mutagen,certifi
@@ -15,7 +15,7 @@ orientation = portrait
 fullscreen = 0
 icon.filename = %(source.dir)s/icon.png
 presplash.filename = %(source.dir)s/presplash.png
-android.presplash_color = #1C1C1F
+android.presplash_color = #141218
 
 android.permissions = INTERNET, ACCESS_NETWORK_STATE, READ_MEDIA_AUDIO, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=28)
 android.api = 35

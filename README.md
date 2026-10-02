@@ -30,6 +30,7 @@ This runs without a window, uses the default settings (192 kbps, subfolders, ski
 
 - Paste links (or use **Paste**), or share straight from the YouTube app: **Share → YT to MP3**.
 - MP3s are saved to `Music/<folder>` (default `Music/YT-MP3`) and show up in music players right away.
+- The **Library** tab lists the downloaded MP3s (playlist folders first). Tap a file to play it in your music app.
 - It has the same options as the desktop app. Pressing Back while downloading sends the app to the background instead of closing it. Keep the app open for long playlists, because Android may stop background apps.
 - MP3 encoding uses FFmpeg's `libshine` encoder (the desktop app uses LAME).
 
@@ -71,6 +72,7 @@ This needs only Docker Desktop: Buildozer, the Android SDK/NDK and JDK all run i
 - **Signing:** the first release build creates a signing key in `%USERPROFILE%\.yt-mp3-android\` (`release.keystore` and `keystore.pass`, both outside the repo). **Back them up.** Every app update must be signed with the same key, or Android refuses to install it over the old version.
 - **Code layout:** `android/main.py` is the Kivy UI. The build script copies the shared core (`src/yt_mp3/`, without the desktop GUI) next to it.
 - **Testing the UI on a PC:** `python android/main.py` (needs `pip install kivy`).
+- **Icons:** Google's [Material Icons](https://github.com/google/material-design-icons) font (`android/MaterialIcons-Regular.ttf`, Apache 2.0). Regenerate the splash screen with `python tools/make_presplash.py`.
 
 **When downloads start failing**, YouTube has usually changed something. Re-run `.\build.ps1`: it always installs the newest yt-dlp. Then replace the exe.
 

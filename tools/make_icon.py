@@ -2,7 +2,7 @@
 
 Pure Python (no Pillow): renders RGBA with simple supersampling and packs PNGs into an ICO.
 Run: python tools/make_icon.py            (assets/icon.ico)
-     python tools/make_icon.py --android  (android/icon.png, presplash.png)
+     python tools/make_icon.py --android  (android/icon.png; presplash: tools/make_presplash.py)
 """
 import struct
 import sys
@@ -65,8 +65,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     if "--android" in sys.argv:
         (root / "android" / "icon.png").write_bytes(render(512, ss=2))
-        (root / "android" / "presplash.png").write_bytes(render(256, ss=2))
-        print("wrote android/icon.png, android/presplash.png")
+        print("wrote android/icon.png")
         return
     images = [render(s) for s in SIZES]
     header = struct.pack("<HHH", 0, 1, len(images))
