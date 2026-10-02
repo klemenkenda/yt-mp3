@@ -1,6 +1,6 @@
 [project]
 name = "yt-mp3"
-version = "1.0.0"
+version = "1.1.0"
 description = "Windows desktop app: YouTube videos and playlists to MP3"
 requires-python = ">=3.10"
 

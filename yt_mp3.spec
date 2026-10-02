@@ -2,7 +2,7 @@
 # Build with:  .\build.ps1   (or: pyinstaller yt_mp3.spec)
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
 
-datas = [("assets/icon.ico", "assets")]
+datas = [("assets/icon.ico", "assets"), ("assets/Roboto-Regular.ttf", "assets"), ("assets/Roboto-Bold.ttf", "assets")]
 binaries = []
 hiddenimports = []
 

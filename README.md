@@ -8,6 +8,8 @@ It ships as a single `yt-mp3.exe` (~52 MB). Users don't need Python, ffmpeg or a
 2. Choose the destination folder.
 3. Click **Download MP3**.
 
+The **Library** page (left rail) lists the MP3s in the destination folder. Double-click a track to play it, or right-click for *Show in Explorer*.
+
 Options:
 - **Quality**: 128, 192 (default), 256 or 320 kbps CBR.
 - **Playlists into their own folder**: each playlist goes to `<destination>\<playlist title>\`.
